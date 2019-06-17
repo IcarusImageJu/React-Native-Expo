@@ -16,8 +16,8 @@ const ClassicMarker = ({incidence:{id, latitude, longitude, status}, history}) =
                 }}
                 onPress={() => {sounds.button(); history.push(`/status/${id}`)}}
             >
-                {/* verify that we have a status, normally it's mandatory... but a double check doesn't hurt */}
-                {status.length !== 0 ? <Pin status={convertStatus(status[status.length - 1].status)}/> : <Pin status={ENUM_STATUS.REPORTED}/>}
+                {/* verify that we have a status, normally it's mandatory... but a double check doesn't hurt ;) */}
+                {status.length !== 0 ? <Pin status={convertStatus(status[status.length - 1].status)}/> : <Pin status={ENUM_STATUS.CREATED}/>}
             </Marker>
         )}
     </Sounds>

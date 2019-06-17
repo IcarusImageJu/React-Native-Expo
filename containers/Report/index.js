@@ -4,23 +4,23 @@ import {
     TextInput,
     View,
     Text,
-    ActivityIndicator,
     KeyboardAvoidingView,
-    AsyncStorage
+    AsyncStorage,
+    TouchableOpacity,
 } from 'react-native';
 import { NetworkConsumer } from 'react-native-offline';
 import gql from "graphql-tag";
-import { Query, Mutation } from "react-apollo";
-import {Location, Permissions } from 'expo';
+import { Mutation } from "react-apollo";
+import * as SecureStore from 'expo-secure-store';
+import * as Permissions from 'expo-permissions';
+import * as Location from 'expo-location';
 import { ReactNativeFile } from 'apollo-upload-client';
 import { withRouter } from "react-router";
 
 import { t } from '../../services/i18n';
 import {ENUM_BACKBUTTON} from '../../enums/backButton';
-import Colors from '../../constants/Colors';
 import MyStorage from '../../constants/MyStorage';
 
-import Picker from '../../components/Picker';
 import Label from '../../components/Label';
 import Button from '../../components/Button';
 import SectionTitle from '../../components/SectionTitle';
@@ -28,17 +28,7 @@ import AttachedFiles from '../AttachedFiles';
 import {styles} from './styles';
 import CardMap from '../../components/CardMap';
 import ErrorReport from '../../components/ErrorReport';
-
-const GET_CATEGORIES = gql`
-    query {
-        categories{
-            id
-            nameNl
-            nameFr
-            nameEn
-        }
-    }
-`;
+import Categories from './Categories';
 
 const CREATE_INCIDENCE = gql`
     mutation Incidence(
@@ -55,7 +45,7 @@ const CREATE_INCIDENCE = gql`
             longitude: $longitude
             categoryId: $categoryId
             attachments: $attachments
-            status: { comment: $comment, status: REPORTED }
+            status: { comment: $comment, status: CREATED }
             address: $address
             }
         ) {
@@ -75,14 +65,16 @@ class Report extends React.PureComponent {
         errorMessage: null,
         loading: false,
         error: null,
+        typeSelect: false,
+        token: null,
         form: {
             location: {
                 latitude: 0,
                 longitude: 0,
             },
-            categoryId: 0,
+            category: null,
             status: {
-                status: 'REPORTED',
+                status: 'CREATED',
                 comment: '',
             },
             attachments:[],
@@ -92,8 +84,14 @@ class Report extends React.PureComponent {
     componentWillMount() {
         this._getLocationAsync();
     }
-    componentDidMount(){
-        this.props.header({title: t('reportAnIssue'), back: ENUM_BACKBUTTON.CANCEL})
+    async componentDidMount(){
+        this.props.header({title: t('reportAnIssue'), back: ENUM_BACKBUTTON.CANCEL});
+        // retreive the token for the mutation
+        const agent = await SecureStore.getItemAsync(MyStorage.AGENT);
+        if(agent !== null) {
+            const {token} = JSON.parse(agent);
+            this.setState({token});
+        }
     }
     render() {
         const {
@@ -101,17 +99,20 @@ class Report extends React.PureComponent {
             location,
             form,
             loading,
-            error
+            error,
+            token,
+            typeSelect
         } = this.state;
         return (
             <NetworkConsumer>
                 {({ isConnected }) => (
                 <Mutation
                     mutation={CREATE_INCIDENCE}
+                    context={{headers:{"authorization": token}}}
                     onCompleted={data => this._issueSubmitted(data)}
-                    onError={error => {this.setState({loading: false, error: "Probleme de connection avec le serveur, veuillez ressayer plus tard."})}}
+                    onError={error => {this.setState({loading: false, error: t('retryLaterServerError')})}}
                 >
-                {(incidence) =>
+                {incidence =>
                     <KeyboardAvoidingView style={styles.container} behavior="padding" enabled>
                         <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
                             <SectionTitle>{t('situation')}</SectionTitle>
@@ -119,18 +120,10 @@ class Report extends React.PureComponent {
                             <CardMap location={location} center={region => this._updateLocation(region)} updateAddress={address => this._updateAddress(address)}/>
                             <SectionTitle>{t('typeOfIssue')}</SectionTitle>
                             <Label>{t('typeOfIssueDescription')}</Label>
-                            <Query
-                                query={GET_CATEGORIES}
-                                fetchPolicy="network-only"
-                            >
-                            {({ loading, error, data:{categories} }) => {
-                                if (loading) return <ActivityIndicator size="small" color={Colors.orange} />;
-                                if (error) return <Text>Error! {error.message}</Text>;
-                                return (
-                                    <Picker options={categories} selected={form.categoryId} onChange={value => this._updatePicker(value)}/>
-                                );
-                            }}
-                            </Query>
+                            <TouchableOpacity onPress={() => this.setState({typeSelect: true})}>
+                                <Text style={styles.typeSelect}>{form.category !== null ? form.category.nameFr : t('selectionTypeIssue')}</Text>
+                            </TouchableOpacity>
+                            <Categories update={category => this._updatePicker(category)} open={typeSelect} close={() => this.setState({typeSelect: false})}/>
                             <SectionTitle>{t('comment')}</SectionTitle>
                             <Label>{t('commentDescription')}</Label>
                             <TextInput
@@ -160,8 +153,8 @@ class Report extends React.PureComponent {
             </NetworkConsumer>
         );
     }
-    _updatePicker = value => {
-        this.setState({form: {...this.state.form, categoryId: value}})
+    _updatePicker = category => {
+        this.setState({form: {...this.state.form, category}})
     }
     _updateComment = value => {
         this.setState({form: {...this.state.form, status: {...this.state.form.status, comment: value}}})
@@ -191,7 +184,7 @@ class Report extends React.PureComponent {
         let { status } = await Permissions.askAsync(Permissions.LOCATION);
         if (status !== 'granted') {
             this.setState({
-                errorMessage: 'Permission to access location was denied',
+                errorMessage: t('errorPermissionLocation'),
             });
         }
         let location = await Location.getCurrentPositionAsync();
@@ -205,7 +198,7 @@ class Report extends React.PureComponent {
                     latitude,
                     longitude
                 },
-                categoryId,
+                category,
                 status:{
                     comment
                 },
@@ -216,19 +209,23 @@ class Report extends React.PureComponent {
         // Enter loading state
         this.setState({loading: true, error: null})
         // Manage Errors
-        // if(attachments.length === 0) {
-        //     this.setState({loading: true, error: null})
-        // } else {
+        if(attachments.length === 0) {
+            this.setState({loading: false, error: t('pleaseAddPïcture')})
+        } else if (comment.length === 0) {
+            this.setState({loading: false, error: t('pleaseAddComment')})
+        } else if (category === null) {
+            this.setState({loading: false, error: t('pleaseAddType')})
+        } else {
             // Perform the mutation
             incidence({variables: {
                 latitude: parseFloat(latitude),
                 longitude: parseFloat(longitude),
-                categoryId: parseInt(categoryId),
+                categoryId: parseInt(category.id),
                 attachments,
                 comment,
                 address
             }})
-        // }
+        }
     };
 
     _issueSubmitted = async ({incidence}) => {

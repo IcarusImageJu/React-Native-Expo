@@ -1,7 +1,10 @@
 // Import all depedencies needed in order to wrap our app
 import React from 'react';
 import { Platform, StatusBar, StyleSheet, View, Image, AsyncStorage, NetInfo } from 'react-native';
-import { AppLoading, Asset, Font, Icon, SplashScreen } from 'expo';
+import { AppLoading, SplashScreen } from 'expo';
+import * as Icon from '@expo/vector-icons';
+import * as Font from 'expo-font';
+import { Asset } from 'expo-asset';
 import { NativeRouter, Route } from "react-router-native";
 import { NetworkProvider } from 'react-native-offline';
 // Import all dependecies and services for localization
@@ -65,7 +68,7 @@ class App extends React.Component {
     isFontLoaded: false,
     drawer: false,
     currentLanguage: 'fr',
-    version: '0.9.5',
+    version: '1.3.2',
     // TODO: Change this with local state management by Apollo
     header:{
       title:'',
@@ -178,8 +181,8 @@ class App extends React.Component {
                     <Route exact path="/page/termsofuse" render={() => <Termsofuse header={header => this.setState({header})} />} />
                     <Route exact path="/myIssue" render={() => <MyIssues header={header => this.setState({header})} />} />
                     <Route exact path="/status/:id" render={() => <StatusIssue agent={agent} header={header => this.setState({header})} />} />
-                    <Route exact path="/status/:id/success/inprogress" render={() => <SuccessInProgress agent={agent} header={header => this.setState({header})} />} />
-                    <Route exact path="/status/:id/success/finalized" render={() => <SuccessFinalized agent={agent} header={header => this.setState({header})} />} />
+                    <Route exact path="/status/:id/success/processing" render={() => <SuccessInProgress agent={agent} header={header => this.setState({header})} />} />
+                    <Route exact path="/status/:id/success/closed" render={() => <SuccessFinalized agent={agent} header={header => this.setState({header})} />} />
                     <Route exact path="/sandbox" render={() => <Sandbox header={header => this.setState({header})} />} />
                   </View>
                   <Drawer

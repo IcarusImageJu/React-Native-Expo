@@ -2,7 +2,7 @@ import React, {PureComponent} from 'react';
 import {Modal, TouchableHighlight, View, Image, StyleSheet} from 'react-native';
 import Colors from '../../constants/Colors';
 import Layout from '../../constants/Layout';
-import { Icon } from 'expo';
+import * as Icon from '@expo/vector-icons';
 
 class ModalGallery extends PureComponent {
 

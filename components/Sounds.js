@@ -1,5 +1,5 @@
 import React from 'react';
-import {Audio} from 'expo';
+import { Audio } from 'expo-av';
 
 const _playSuccess = async () => {
     try {

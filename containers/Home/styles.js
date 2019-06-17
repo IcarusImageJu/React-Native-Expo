@@ -40,7 +40,7 @@ export const styles = StyleSheet.create({
         flex: 1,
         width: Layout.window.width,
         height: Layout.window.height - 64 - Layout.statusBarHeight,
-        backgroundColor: Colors.grey,
+        backgroundColor: Colors.white,
         position: 'absolute',
         top: 0,
         left: 0,

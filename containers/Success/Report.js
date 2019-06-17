@@ -6,7 +6,6 @@ import {
     Animated
 } from 'react-native';
 import { withRouter } from "react-router";
-import { Audio } from 'expo';
 
 import { styles } from './styles';
 import { Link } from "react-router-native";
@@ -15,6 +14,7 @@ import Button from '../../components/Button';
 
 import { t } from '../../services/i18n';
 import {ENUM_BACKBUTTON} from '../../enums/backButton';
+import { withSound } from '../../components/Sounds';
 
 class SuccessReport extends React.PureComponent {
     state = {
@@ -36,7 +36,7 @@ class SuccessReport extends React.PureComponent {
         // Trigger the header change
         this.props.header({title: t('thankYou'), back: ENUM_BACKBUTTON.CANCEL_INACTIVE})
         // Play Success sound
-        this._successSound();
+        this.props.sounds.success();
         // Animate the page
         const {icon, title, subTitle} = this.state;
         Vibration.vibrate(250);
@@ -120,17 +120,6 @@ class SuccessReport extends React.PureComponent {
         );
     }
 
-    _successSound = async () => {
-        try {
-            const { sound: soundObject, status } = await Audio.Sound.createAsync(
-                require('../../assets/sounds/success.m4a'),
-                { shouldPlay: true },
-            );
-            // Your sound is playing!
-        } catch (error) {
-            // An error occurred!
-        }
-    }
 }
 
-export default withRouter(SuccessReport);
+export default withSound(withRouter(SuccessReport));

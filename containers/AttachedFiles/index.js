@@ -4,7 +4,9 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import { Icon, ImagePicker, Permissions } from 'expo';
+import * as Permissions from 'expo-permissions';
+import * as ImagePicker from 'expo-image-picker';
+import * as Icon from '@expo/vector-icons';
 
 import { styles } from './styles';
 import ModalGallery from './modal';

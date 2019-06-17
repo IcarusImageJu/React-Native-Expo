@@ -4,13 +4,17 @@ import { Link } from "react-router-native";
 
 import Colors from '../constants/Colors';
 import { statusTitle, ENUM_STATUS, convertStatus } from '../enums/status';
+import { t } from '../services/i18n';
 
 const Status = ({status}) => {
-    const backStatus = status.length === 0 ? ENUM_STATUS.REPORTED : convertStatus(status[status.length - 1].status);
+    const backStatus = status.length === 0 ? ENUM_STATUS.CREATED : convertStatus(status[status.length - 1].status);
+    const date = status.length === 0 ? null : status[0].date
     return(
         <View style={styles.contentTop}>
             <View style={{...styles.status, ...styles[`status${backStatus}`]}}/>
-            <Text numberOfLines={1} style={styles.statusText}>{statusTitle(backStatus)}</Text>
+            <Text numberOfLines={1} style={styles.statusText}>
+                {`${statusTitle(backStatus)} - ${date !== null ? t('date', {date}) : ''}`}
+            </Text>
         </View>
     )
 }
@@ -18,10 +22,10 @@ const Status = ({status}) => {
 const IssueItem = ({issue:{status, id, attachments, address}}) => (
     <Link style={styles.container} to={`/status/${id}`}>
         <View style={styles.item}>
-            <Image
+            {attachments.length > 0 && <Image
                 style={styles.image}
-                source={{uri: attachments[0] ? `${attachments[0].baseUrl}${attachments[0].thumbnailPath}` : null}}
-            />
+                source={{uri: `${attachments[0].baseUrl}${attachments[0].thumbnailPath}`}}
+            />}
             <View style={styles.content}>
                 <Status status={status} />
                 {address && <Text ellipsizeMode={'clip'} numberOfLines={1} style={styles.text}>
@@ -66,21 +70,30 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         marginRight: 4
     },
+    // Incomplete
     status0: {
+        borderColor: Colors.grey,
+        backgroundColor: Colors.white,
+    },
+    // Create
+    status1: {
         borderColor: Colors.orange,
         backgroundColor: Colors.white,
     },
-    status1: {
+    // Processing
+    status2: {
         borderColor: Colors.orange,
         backgroundColor: Colors.orange,
     },
-    status2: {
-        borderColor: Colors.green,
-        backgroundColor: Colors.green,
-    },
+    // Dismissed
     status3: {
         borderColor: Colors.grey,
         backgroundColor: Colors.grey,
+    },
+    // Closed
+    status3: {
+        borderColor: Colors.green,
+        backgroundColor: Colors.green,
     },
     statusText: {
         // fontWeight: 'regular',

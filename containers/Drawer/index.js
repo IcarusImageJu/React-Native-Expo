@@ -7,10 +7,12 @@ import {
     Animated,
     ToastAndroid,
     Vibration,
-    Alert
+    Alert,
+    Platform
 } from 'react-native';
 
-import { Icon, SecureStore } from 'expo';
+import * as SecureStore from 'expo-secure-store';
+import * as Icon from '@expo/vector-icons';
 import { Link } from "react-router-native";
 import {
     FlingGestureHandler,
@@ -195,20 +197,24 @@ export default class Drawer extends React.PureComponent {
         const {agent = null} = this.props;
         // let the agent try to click 5 time before screening the modal
         if(agent) {
-            ToastAndroid.showWithGravity(
-                `Vous êtes déjà connecté en tant qu'agent`,
-                ToastAndroid.SHORT,
-                ToastAndroid.CENTER,
-            );
+            if(Platform.OS === 'android'){
+                ToastAndroid.showWithGravity(
+                    `Vous êtes déjà connecté en tant qu'agent`,
+                    ToastAndroid.SHORT,
+                    ToastAndroid.CENTER,
+                )
+            };
         } else {
             if(agentPress < 2){
                 this.setState({agentPress: agentPress + 1});
             } else if (agentPress < 4) {
-                ToastAndroid.showWithGravity(
-                    `Encore ${ 5 - agentPress} pour debloquer le mode agent`,
-                    ToastAndroid.SHORT,
-                    ToastAndroid.CENTER,
-                );
+                if(Platform.OS === 'android'){
+                    ToastAndroid.showWithGravity(
+                        `Encore ${ 5 - agentPress} pour debloquer le mode agent`,
+                        ToastAndroid.SHORT,
+                        ToastAndroid.CENTER,
+                    );
+                }
                 this.setState({agentPress: agentPress + 1});
             } else {
                 Vibration.vibrate(250);

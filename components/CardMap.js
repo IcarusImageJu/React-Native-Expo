@@ -1,5 +1,6 @@
 import React from 'react';
-import {Location, Icon, Audio} from 'expo';
+import * as Icon from '@expo/vector-icons';
+import * as Location from 'expo-location';
 import MapView ,{ MAP_TYPES, UrlTile } from 'react-native-maps';
 import {
     View,
@@ -15,6 +16,7 @@ import Label from './Label';
 import Pin from './Pin';
 
 import Colors from '../constants/Colors';
+import { t } from '../services/i18n';
 import Layout from '../constants/Layout';
 import Api from '../constants/Api';
 import { withSound } from './Sounds';
@@ -115,7 +117,7 @@ class CardMap extends React.PureComponent{
         const {address} = this.state;
         const scheme = Platform.select({ ios: 'maps:0,0?q=', android: 'geo:0,0?q=' });
         const latLng = `${latitude},${longitude}`;
-        const label = address ? `${address.name} ${address.street}, ${address.postalCode} ${address.city}` : 'Incident';
+        const label = address ? `${address.name} ${address.street}, ${address.postalCode} ${address.city}` : t('issue');
         const url = Platform.select({
             ios: `${scheme}${label}@${latLng}`,
             android: `${scheme}${latLng}(${label})`

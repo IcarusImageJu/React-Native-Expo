@@ -6,7 +6,7 @@ import {
     View,
     BackHandler
 } from 'react-native';
-import { Icon } from 'expo';
+import * as Icon from '@expo/vector-icons';
 import { Link } from "react-router-native";
 import { NetworkConsumer } from 'react-native-offline';
 
@@ -16,7 +16,7 @@ import Colors from '../constants/Colors';
 import Layout from '../constants/Layout';
 import { ENUM_BACKBUTTON } from '../enums/backButton';
 
-const BackButton = ({type, history}) => {
+const BackButton = ({type}) => {
     switch(type){
         case ENUM_BACKBUTTON.CANCEL :
             return (
@@ -55,7 +55,7 @@ const BackButton = ({type, history}) => {
     }
 }
 
-export default class Drawer extends React.PureComponent {
+class Drawer extends React.PureComponent {
     state = {
         backPressed : 0
     }
@@ -73,7 +73,7 @@ export default class Drawer extends React.PureComponent {
         if(this.state.backPressed === 2){
             BackHandler.exitApp()
         }
-        history.goBack(); // works best when the goBack is async
+        history.push('/'); // works best when the goBack is async
         return true;
     }
     render() {
@@ -95,12 +95,12 @@ export default class Drawer extends React.PureComponent {
                         <View style={styles.containerTitle}>
                             <Text style={styles.title}>{title}</Text>
                         </View>
-                        <BackButton type={back} history={history}/>
+                        <BackButton type={back}/>
                     </View>
                 </View>
                 <NetworkConsumer>
                 {({ isConnected }) => (
-                    !isConnected && (<Text style={styles.offline}>You're currently offline</Text>)
+                    !isConnected && (<Text style={styles.offline}>{t('currentlyOffline')}</Text>)
                 )}
                 </NetworkConsumer>
             </>
@@ -108,6 +108,8 @@ export default class Drawer extends React.PureComponent {
     }
 
 }
+
+export default Drawer;
 
 const styles = StyleSheet.create({
     container: {
@@ -168,7 +170,6 @@ const styles = StyleSheet.create({
         opacity: .54,
     },
     backText: {
-        // fontWeight: 'bold',
         color: Colors.white,
         fontSize: 16,
         fontFamily: 'dosis-bold',

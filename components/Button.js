@@ -1,9 +1,10 @@
 import React from 'react';
-import { Icon, Audio } from 'expo';
-import { StyleSheet, Text, TouchableOpacity, View, ActivityIndicator, ToastAndroid } from 'react-native';
+import * as Icon from '@expo/vector-icons';
+import { StyleSheet, Text, TouchableOpacity, View, ActivityIndicator, Platform } from 'react-native';
 import { Link } from "react-router-native";
 
 import Colors from '../constants/Colors';
+import { t } from '../services/i18n';
 import { withSound } from './Sounds';
 
 const invertedColor = color => {
@@ -38,7 +39,7 @@ class Button extends React.PureComponent{
         const {icon, color = 'orange', children, to = '', loading = false, disabled = false, handlePress, sounds} = this.props;
         if(disabled) {
             return(
-                <TouchableOpacity style={styles.loading} onPress={() => {sounds.error(); this._message('Veuillez vous connecter à internet')}}>
+                <TouchableOpacity style={styles.loading} onPress={() => {sounds.error(); this._message(t('connectToInternet'))}}>
                     <ButtonIntern loading={loading} color={color} icon={icon}>{children}</ButtonIntern>
                 </TouchableOpacity>
             )
@@ -65,11 +66,14 @@ class Button extends React.PureComponent{
     }
 
     _message = message => {
-        ToastAndroid.showWithGravity(
-            message,
-            ToastAndroid.LONG,
-            ToastAndroid.CENTER,
-        );
+        // trigger the toast only on android
+        if(Platform.OS === 'android') {
+            ToastAndroid.showWithGravity(
+                message,
+                ToastAndroid.LONG,
+                ToastAndroid.CENTER,
+            );
+        }
     }
 }
 

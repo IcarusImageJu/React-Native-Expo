@@ -11,11 +11,11 @@ const StatusBar = ({status}) => {
 
     const loading = () => {
         switch (status){
-            case ENUM_STATUS.FINALIZED:
+            case ENUM_STATUS.CLOSED:
                 return '100%';
-            case ENUM_STATUS.REFUSE:
+            case ENUM_STATUS.DISMISSED:
                 return '100%';
-            case ENUM_STATUS.IN_PROGRESS:
+            case ENUM_STATUS.PROCESSING:
                 return '50%';
             default:
                 return '0%';
@@ -67,13 +67,13 @@ const styles = StyleSheet.create({
         position: "absolute",
         top: 0,
     },
-    [ENUM_STATUS.FINALIZED] :{
+    [ENUM_STATUS.CLOSED] :{
         backgroundColor: Colors.green,
     },
-    [ENUM_STATUS.IN_PROGRESS] :{
+    [ENUM_STATUS.PROCESSING] :{
         backgroundColor: Colors.orange,
     },
-    [ENUM_STATUS.REFUSE] :{
+    [ENUM_STATUS.DISMISSED] :{
         backgroundColor: Colors.grey,
     }
 });

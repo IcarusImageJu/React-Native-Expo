@@ -5,7 +5,6 @@ import {
     Vibration,
     Animated
 } from 'react-native';
-import { Audio } from 'expo';
 
 import { styles } from './styles';
 import { Link } from "react-router-native";
@@ -14,6 +13,7 @@ import Button from '../../components/Button';
 
 import { t } from '../../services/i18n';
 import {ENUM_BACKBUTTON} from '../../enums/backButton';
+import { withSound } from '../../components/Sounds';
 
 class SuccessFinalized extends React.PureComponent {
     state = {
@@ -33,9 +33,9 @@ class SuccessFinalized extends React.PureComponent {
 
     componentDidMount(){
         // Trigger the header change
-        this.props.header({title: "Bon travail", back: ENUM_BACKBUTTON.CANCEL_INACTIVE})
+        this.props.header({title: t('goodWork'), back: ENUM_BACKBUTTON.CANCEL_INACTIVE})
         // Play Success sound
-        this._successSound();
+        this.props.sounds.success();
         // Animate the page
         const {icon, title, subTitle} = this.state;
         Vibration.vibrate(250);
@@ -95,12 +95,12 @@ class SuccessFinalized extends React.PureComponent {
                     </Animated.View>
                     <Animated.View style={{opacity: icon.opacity, transform: [{scaleX: title.scale}, {scaleY: title.scale}]}}>
                         <Text style={styles.title}>
-                            Bon travail !
+                            {t('goodWork')}
                         </Text>
                     </Animated.View>
                     <Animated.View style={{opacity: icon.opacity, transform: [{scaleX: subTitle.scale}, {scaleY: icon.scale}]}}>
                         <Text style={styles.text}>
-                            Le signalement est résolu, grâce à vous.
+                            {t('goodWorkDetail')}
                         </Text>
                     </Animated.View>
                 </View>
@@ -118,18 +118,6 @@ class SuccessFinalized extends React.PureComponent {
         );
     }
 
-    _successSound = async () => {
-        try {
-            const { sound: soundObject, status } = await Audio.Sound.createAsync(
-                require('../../assets/sounds/success.m4a'),
-                { shouldPlay: true },
-            );
-            // Your sound is playing!
-        } catch (error) {
-            // An error occurred!
-        }
-    }
-
 }
 
-export default SuccessFinalized;
+export default withSound(SuccessFinalized);

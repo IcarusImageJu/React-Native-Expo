@@ -74,7 +74,7 @@ class StatusIssue extends React.PureComponent {
         },
         dialog: {
             open: false,
-            to: ENUM_STATUS.IN_PROGRESS,
+            to: ENUM_STATUS.PROCESSING,
         },
     }
 
@@ -121,7 +121,7 @@ class StatusIssue extends React.PureComponent {
                 // Create the object for the current status of the incidence
                 const status = {
                     comment: statusBack.length > 1 ? statusBack[statusBack.length - 1].comment : null,
-                    status: statusBack.length !== 0 ? convertStatus(statusBack[statusBack.length - 1].status) : ENUM_STATUS.REPORTED,
+                    status: statusBack.length !== 0 ? convertStatus(statusBack[statusBack.length - 1].status) : ENUM_STATUS.CREATED,
                     date: statusBack.length !== 0 ? statusBack[0].date : null
                 }
                 // Use the first comment as the comment of the reporting user
@@ -133,7 +133,6 @@ class StatusIssue extends React.PureComponent {
                         longitude: longitude || 0,
                     }
                 }
-                const alreadyIn = myIssues.includes(id.toString());
                 return (
                     <ScrollView
                         style={styles.container}

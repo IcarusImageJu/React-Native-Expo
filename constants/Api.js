@@ -1,7 +1,7 @@
 export default {
     GRAPHQL: "https://fmx.walloniepluspropre.be/node/graphql",
     HOOK: "https://webhook.site/85d43de9-cb6c-4595-90da-82eb898172a7",
-    MAPSTILE: "http://a.tile.osm.org/{z}/{x}/{y}.png",
+    MAPSTILE: "http://a.tile.openstreetmap.de/tiles/osmde/{z}/{x}/{y}.png",
 }
 
 // OSM default MAPSTILE

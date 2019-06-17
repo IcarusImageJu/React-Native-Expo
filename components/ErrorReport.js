@@ -16,7 +16,7 @@ const ErrorReport = ({error, message = null, sounds}) => {
         sounds.error();
         return(
             <View style={commentStyles.commentContainer}>
-                <SectionTitle color='white'>{message ? message : `Votre signalement ne s'est pas envoyé :`}</SectionTitle>
+                <SectionTitle color='white'>{message ? message : `${t('issueNotSent')} :`}</SectionTitle>
                 <Text style={commentStyles.comment}>{error}</Text>
             </View>
         )

@@ -6,20 +6,24 @@ import {
     FlatList,
     ActivityIndicator
 } from 'react-native';
+import posed from 'react-native-pose';
 import gql from 'graphql-tag';
 import { Query } from "react-apollo";
+import { Link } from "react-router-native";
+import moment from 'moment';
 
 import { emptyStyles, styles } from './styles';
-import { Link } from "react-router-native";
+import { ENUM_BACKBUTTON } from '../../enums/backButton';
+import { ENUM_STATUS, convertStatus } from '../../enums/status';
+import MyStorage from '../../constants/MyStorage';
+import Colors from '../../constants/Colors';
+import { t } from '../../services/i18n';
+
 import BigIcon from '../../components/BigIcon';
 import Button from '../../components/Button';
 import Label from '../../components/Label';
-import { ENUM_BACKBUTTON } from '../../enums/backButton';
-import MyStorage from '../../constants/MyStorage';
-import Colors from '../../constants/Colors';
 import IssueItem from '../../components/IssueItem';
-
-import { t } from '../../services/i18n';
+import Filters from '../../components/Filters';
 import IssuesCounter from '../../components/IssuesCounter';
 
 const GET_ISSUE = gql`
@@ -31,7 +35,6 @@ const GET_ISSUE = gql`
             status {
                 status
                 date
-                comment
             }
             address{
                 name
@@ -39,13 +42,7 @@ const GET_ISSUE = gql`
                 postalCode
                 city
             }
-            category {
-                nameFr
-                nameEn
-                nameNl
-                id
-            }
-            attachments {
+            attachments(pagination: { limit: 1 }) {
                 id
                 thumbnailPath
                 baseUrl
@@ -61,23 +58,23 @@ const EmptyState = () => (
                 <BigIcon icon={'sun-o'} color={'grey'}/>
             </View>
             <Text style={emptyStyles.title}>
-                {t('common:noIssue')}
+                {t('noIssue')}
             </Text>
             <Text style={emptyStyles.text}>
-                {t('common:noIssueYet')}
+                {t('noIssueYet')}
             </Text>
         </View>
         <View style={emptyStyles.bottom}>
             <View style={emptyStyles.button}>
                 <Button to={'/report'} icon="exclamation">
-                    {t('common:reportAnIssue')}
+                    {t('reportAnIssue')}
                 </Button>
             </View>
             <Link to={'/allIssues'}>
                 <Text style={emptyStyles.link}>{t('allIssues')}</Text>
             </Link>
             <Link to={'/'}>
-                <Text style={emptyStyles.link}>{t('common:backToHome')}</Text>
+                <Text style={emptyStyles.link}>{t('backToHome')}</Text>
             </Link>
         </View>
     </View>
@@ -87,13 +84,21 @@ class MyIssues extends React.PureComponent {
     state = {
         myIssues: [],
         loadingState: true,
+        filter: {
+            open: false,
+            date: false,
+            startDate: new Date(),
+            endDate: new Date(),
+            status: false,
+            statusSelected: ENUM_STATUS.CREATED,
+        }
     }
     componentDidMount(){
         this.props.header({title: t('myIssues'), back: ENUM_BACKBUTTON.BACK});
         this._loadMyIssues();
     }
     render() {
-        const {myIssues, loadingState} = this.state;
+        const {myIssues, loadingState, filter} = this.state;
         // We avoid a blink of the empty state by waiting the loadingState
         if(loadingState){
             return <ActivityIndicator size="large" style={{paddingTop: 32, paddingBottom: 32}} color={Colors.orange} />
@@ -106,6 +111,7 @@ class MyIssues extends React.PureComponent {
         }
         return(
             <View style={styles.container}>
+                <Filters filter={filter} update={filter => this.setState({filter})}/>
                 <FlatList
                     ListHeaderComponent={() => (
                         <View style={styles.label}>
@@ -132,9 +138,22 @@ class MyIssues extends React.PureComponent {
                                 if (loading) return <ActivityIndicator size="small" style={{paddingTop: 16, paddingBottom: 16}} color={Colors.orange} />;
                                 if (error) return <Text>Error! {error.message}</Text>;
 
-                                return(
-                                    <IssueItem issue={data.incidence} />
-                                )
+                                // Fitler by status
+                                const status = convertStatus(data.incidence.status[data.incidence.status.length - 1].status);
+                                if (filter.status && filter.statusSelected !== status) {
+                                    // If the status is used and the status is different from the one selected, return null
+                                    return null
+                                }
+
+                                //filter by date
+                                const date = data.incidence.status[0].date;
+                                const dateIsBetween = moment(date).isBetween(filter.startDate, filter.endDate);
+                                if(filter.date && !dateIsBetween) {
+                                    // if the date filter is used and the date isn't in between the range, return null
+                                    return null
+                                }
+
+                                return(<IssueItem issue={data.incidence} />)
                             }}
                         </Query>
                     )}

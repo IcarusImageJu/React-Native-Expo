@@ -1,12 +1,9 @@
 import React from 'react';
 import {
-    ScrollView,
     TextInput,
-    Text,
     View,
-    TouchableOpacity,
 } from 'react-native';
-import { SecureStore } from 'expo';
+import * as SecureStore from 'expo-secure-store';
 import { withRouter } from "react-router";
 import Dialog, {
     DialogContent,
@@ -21,7 +18,7 @@ import { Mutation } from "react-apollo";
 import { t } from '../../services/i18n';
 import {styles} from './styles';
 
-import { ENUM_STATUS, statusTitle } from '../../enums/status';
+import { ENUM_STATUS, statusTitle, convertStatusClientToBack } from '../../enums/status';
 import Picker from '../../components/Picker';
 import SectionTitle from '../../components/SectionTitle';
 import Label from '../../components/Label';
@@ -44,7 +41,7 @@ const UPDATE_STATUS = gql`
 
 class UpdateStatus extends React.PureComponent{
     state={
-        status: ENUM_STATUS.IN_PROGRESS,
+        status: ENUM_STATUS.PROCESSING,
         comment: '',
         token: null,
         typeDissmiss: "close",
@@ -69,20 +66,24 @@ class UpdateStatus extends React.PureComponent{
         // Create the status options for the dropdown list
         const options = [
             {
-                "id": ENUM_STATUS.REPORTED,
-                "nameFr": statusTitle(ENUM_STATUS.REPORTED),
+                "id": ENUM_STATUS.CREATED,
+                "nameFr": statusTitle(ENUM_STATUS.CREATED),
             },
             {
-                "id": ENUM_STATUS.IN_PROGRESS,
-                "nameFr": statusTitle(ENUM_STATUS.IN_PROGRESS),
+                "id": ENUM_STATUS.PROCESSING,
+                "nameFr": statusTitle(ENUM_STATUS.PROCESSING),
             },
             {
-                "id": ENUM_STATUS.FINALIZED,
-                "nameFr": statusTitle(ENUM_STATUS.FINALIZED),
+                "id": ENUM_STATUS.CLOSED,
+                "nameFr": statusTitle(ENUM_STATUS.CLOSED),
             },
             {
-                "id": ENUM_STATUS.REFUSE,
-                "nameFr": statusTitle(ENUM_STATUS.REFUSE),
+                "id": ENUM_STATUS.INCOMPLETE,
+                "nameFr": statusTitle(ENUM_STATUS.INCOMPLETE),
+            },
+            {
+                "id": ENUM_STATUS.DISMISSED,
+                "nameFr": statusTitle(ENUM_STATUS.DISMISSED),
             }
         ];
 
@@ -119,8 +120,8 @@ class UpdateStatus extends React.PureComponent{
                 >
                     <DialogContent>
                         <View style={styles.dialogContainer}>
-                            <SectionTitle>Choisir un statut</SectionTitle>
-                            <Label>Veuillez selectionner un statut dans la liste suivante</Label>
+                            <SectionTitle>{t('chooseStatus')}</SectionTitle>
+                            <Label>{t('chooseStatusDescription')}</Label>
                             <Picker options={options} selected={status} onChange={value => this.setState({status: value})}/>
                             <SectionTitle>{t('comment')}</SectionTitle>
                             <Label>{t('commentDescription')}</Label>
@@ -144,46 +145,32 @@ class UpdateStatus extends React.PureComponent{
     _performMutation = mutate => {
         const {status: unconvertedStatus, comment} = this.state;
         const { incidenceId } = this.props;
-        // Convert status for the mutation, so the back have is enumeration right
-        const status = () => {
-            switch (unconvertedStatus) {
-                case ENUM_STATUS.REPORTED:
-                    return "REPORTED";
-                case ENUM_STATUS.IN_PROGRESS:
-                    return "IN_PROGRESS";
-                case ENUM_STATUS.FINALIZED:
-                    return "FINALIZED";
-                case ENUM_STATUS.REFUSE:
-                    return "REFUSE";
-                default:
-                    return "REPORTED";
-            }
-        };
         // Perform the mutation
         mutate({
             variables:{
                 incidenceId,
                 comment,
-                status: status()
+                // Convert status for the mutation, so the back have is enumeration right
+                status: convertStatusClientToBack(unconvertedStatus)
             }
         })
     }
 
-    _statusUpdated = (data) => {
-        const {status} = this.state;
-        const { close, history } = this.props;
+    _statusUpdated = () => {
+        const { status } = this.state;
+        const { close } = this.props;
         // trigger a refetch if the status is REPORTED or REFUSE
         // Or show the right succes agent page
         switch (status) {
-            case ENUM_STATUS.IN_PROGRESS:
+            case ENUM_STATUS.PROCESSING:
                 // on close, the popup will be the dismissed
                 // and go to the in progress success page
-                this.setState({typeDissmiss: ENUM_STATUS.IN_PROGRESS})
+                this.setState({typeDissmiss: ENUM_STATUS.PROCESSING})
                 return close();
-            case ENUM_STATUS.FINALIZED:
+            case ENUM_STATUS.CLOSED:
                 // on close, the popup will be the dismissed
                 // and go to the finalized success page
-                this.setState({typeDissmiss: ENUM_STATUS.FINALIZED})
+                this.setState({typeDissmiss: ENUM_STATUS.CLOSED})
                 return close();;
             default:
                 // on close, the popup will be the dismissed
@@ -202,10 +189,10 @@ class UpdateStatus extends React.PureComponent{
         const { updated, history, match: {params: {id}} } = this.props;
         const { typeDissmiss } = this.state;
         switch (typeDissmiss) {
-            case ENUM_STATUS.IN_PROGRESS:
-                return history.push(`/status/${id}/success/inprogress`);
-            case ENUM_STATUS.FINALIZED:
-                return history.push(`/status/${id}/success/finalized`);
+            case ENUM_STATUS.PROCESSING:
+                return history.push(`/status/${id}/success/processing`);
+            case ENUM_STATUS.CLOSED:
+                return history.push(`/status/${id}/success/closed`);
             case 'cancel':
                 break;
             default:

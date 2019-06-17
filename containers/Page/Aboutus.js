@@ -4,7 +4,9 @@ import {
     Text,
 } from 'react-native';
 
-import { WebBrowser, Linking } from 'expo';
+import { Linking } from 'expo';
+
+import * as WebBrowser from 'expo-web-browser';
 
 import {styles} from './styles';
 import { t } from '../../services/i18n';

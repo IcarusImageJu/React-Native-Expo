@@ -16,10 +16,10 @@ const OfflineRefetch = () => (
                 <BigIcon icon={'refresh'} color={'grey'}/>
             </View>
             <Text style={emptyStyles.title}>
-                Hu ho! Vous n'êtes pas connecté
+                {t('currentlyOffline')}
             </Text>
             <Text style={emptyStyles.text}>
-                Veuillez vous connecter à internet pour charger la page
+                {t('connectToInternet')}
             </Text>
         </View>
     </View>

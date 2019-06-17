@@ -20,7 +20,7 @@ const Status = ({status:{status: enumStatus, comment, date}}) => {
             <View style={{...commentStyles.commentContainer, ...commentStyles[enumStatus]}}>
                 <Text style={commentStyles.title}>{statusTitle(enumStatus)}</Text>
                 {date && <SectionTitle color='white'>{t('issue')}</SectionTitle>}
-                {date && <Text style={commentStyles.comment}>{t("date", {date})}</Text>}
+                {date && <Text style={commentStyles.comment}>{t("dateTime", {date})}</Text>}
                 <SectionTitle color='white'>{t('comment')}</SectionTitle>
                 <Text style={commentStyles.comment}>{comment}</Text>
             </View>
@@ -32,7 +32,7 @@ const Status = ({status:{status: enumStatus, comment, date}}) => {
             <Text style={barStyle.title}>{statusTitle(enumStatus)}</Text>
             <StatusBar status={enumStatus}/>
             {date && <SectionTitle>{t('issue')}</SectionTitle>}
-            {date && <Text style={barStyle.text}>{t("date", {date})}</Text>}
+            {date && <Text style={barStyle.text}>{t("dateTime", {date})}</Text>}
         </View>
     )
 }
@@ -64,13 +64,13 @@ const commentStyles = StyleSheet.create({
         width: '100%',
         fontFamily: 'dosis-bold',
     },
-    [ENUM_STATUS.FINALIZED] :{
+    [ENUM_STATUS.CLOSED] :{
         backgroundColor: Colors.green,
     },
-    [ENUM_STATUS.IN_PROGRESS] :{
+    [ENUM_STATUS.PROCESSING] :{
         backgroundColor: Colors.orange,
     },
-    [ENUM_STATUS.REFUSE] :{
+    [ENUM_STATUS.DISMISSED] :{
         backgroundColor: Colors.grey,
     }
 });
@@ -91,13 +91,13 @@ const barStyle = StyleSheet.create({
         fontSize: 14,
         fontFamily: 'dosis-regular',
     },
-    [ENUM_STATUS.FINALIZED] :{
+    [ENUM_STATUS.CLOSED] :{
         backgroundColor: Colors.green,
     },
-    [ENUM_STATUS.IN_PROGRESS] :{
+    [ENUM_STATUS.PROCESSING] :{
         backgroundColor: Colors.orange,
     },
-    [ENUM_STATUS.REFUSE] :{
+    [ENUM_STATUS.DISMISSED] :{
         backgroundColor: Colors.grey,
     }
 });

@@ -5,7 +5,8 @@ import {
   View,
   ActivityIndicator,
 } from 'react-native';
-import { Location, Permissions } from 'expo';
+import * as Permissions from 'expo-permissions';
+import * as Location from 'expo-location';
 import posed from 'react-native-pose';
 import MapView ,{ MAP_TYPES, UrlTile } from 'react-native-maps';
 import { ApolloConsumer } from 'react-apollo';
@@ -54,6 +55,7 @@ const GET_MAPPED_ISSUES = gql`
           longitude
           status {
             status
+            date
           }
           attachments(pagination: { limit: 1 }) {
             id
@@ -102,6 +104,7 @@ class Home extends React.PureComponent {
           <View style={styles.container}>
             <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
                 <View style={styles.maps}>
+                  {!location && <ActivityIndicator size="large" style={{paddingTop: 64, paddingBottom: 32}} color={Colors.orange} />}
                   {location && (
                     <MapView
                       provider={null}
@@ -168,7 +171,7 @@ class Home extends React.PureComponent {
     const { status } = await Permissions.askAsync(Permissions.LOCATION);
     if (status !== 'granted') {
       this.setState({
-        errorMessage: 'Permission to access location was denied',
+        errorMessage: t('errorPermissionLocation'),
       });
     }
     const location = await Location.getCurrentPositionAsync();

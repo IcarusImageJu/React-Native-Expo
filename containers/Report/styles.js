@@ -29,6 +29,15 @@ export const styles = StyleSheet.create({
         marginBottom:16,
         fontFamily: 'dosis-regular',
     },
+    typeSelect: {
+        borderColor: Colors.black,
+        borderWidth: 1,
+        borderRadius: 4,
+        marginBottom: 16,
+        padding: 8,
+        fontFamily: 'dosis-bold',
+        width: '100%',
+    },
     attachment: {
         marginBottom:16,
         width: '100%',

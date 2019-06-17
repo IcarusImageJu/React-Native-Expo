@@ -1,4 +1,4 @@
-import {StyleSheet} from 'react-native';
+import {StyleSheet, Platform} from 'react-native';
 
 import Colors from '../../constants/Colors';
 import Layout from '../../constants/Layout';
@@ -94,7 +94,7 @@ export const styles = StyleSheet.create({
     },
     versionContainer: {
         position:'absolute',
-        bottom: 0,
+        bottom: Platform.OS === 'ios' ? 32 : 0,
     },
     version:{
         color: 'rgba(0,0,0,0.54)',
